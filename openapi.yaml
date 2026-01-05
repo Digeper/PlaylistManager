@@ -1,0 +1,323 @@
+swagger: "2.0"
+info:
+  title: PlaylistManager API
+  description: REST API for the PlaylistManager service that handles user playlist management with JWT authentication
+  version: 1.0.0
+  contact:
+    name: Muzika Platform
+host: api.example.com:8092
+basePath: /
+schemes:
+  - http
+  - https
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: JWT token in format "Bearer {token}"
+tags:
+  - name: playlist
+    description: Playlist management endpoints
+paths:
+  /playlist:
+    get:
+      tags:
+        - playlist
+      summary: Get all playlists owned by user
+      description: Retrieve all playlists owned by the authenticated user
+      operationId: getAllPlaylists
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Playlists retrieved successfully
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/PlaylistResponse"
+        "401":
+          description: Unauthorized (invalid or missing JWT token)
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - playlist
+      summary: Create new playlist
+      description: Create a new playlist for the authenticated user
+      operationId: createPlaylist
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: body
+          name: body
+          description: Playlist creation data
+          required: true
+          schema:
+            $ref: "#/definitions/CreatePlaylistRequest"
+      responses:
+        "201":
+          description: Playlist created successfully
+          schema:
+            $ref: "#/definitions/PlaylistResponse"
+        "400":
+          description: Bad request (validation error, missing required fields)
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Unauthorized (invalid or missing JWT token)
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/Error"
+  /playlist/{id}:
+    get:
+      tags:
+        - playlist
+      summary: Get playlist with songs
+      description: Get a specific playlist by ID with all its songs. Only accessible by the playlist owner.
+      operationId: getPlaylist
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          format: uuid
+          required: true
+          description: Playlist UUID
+      responses:
+        "200":
+          description: Playlist retrieved successfully
+          schema:
+            $ref: "#/definitions/PlaylistWithSongsResponse"
+        "401":
+          description: Unauthorized (invalid or missing JWT token)
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: Playlist not found or access denied
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - playlist
+      summary: Delete playlist
+      description: Delete a playlist by ID. Only accessible by the playlist owner.
+      operationId: deletePlaylist
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          format: uuid
+          required: true
+          description: Playlist UUID
+      responses:
+        "204":
+          description: Playlist deleted successfully (No Content)
+        "401":
+          description: Unauthorized (invalid or missing JWT token)
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: Playlist not found or access denied
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/Error"
+  /playlist/{id}/song/{songId}:
+    post:
+      tags:
+        - playlist
+      summary: Add song to playlist
+      description: Add a song (by UUID) to a playlist. Only accessible by the playlist owner.
+      operationId: addSongToPlaylist
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          format: uuid
+          required: true
+          description: Playlist UUID
+        - in: path
+          name: songId
+          type: string
+          format: uuid
+          required: true
+          description: Song UUID (reference to QueueManager Song)
+      responses:
+        "201":
+          description: Song added to playlist successfully
+        "400":
+          description: Bad request (song already in playlist, validation error)
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Unauthorized (invalid or missing JWT token)
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: Playlist not found or access denied
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - playlist
+      summary: Remove song from playlist
+      description: Remove a song from a playlist. Only accessible by the playlist owner.
+      operationId: removeSongFromPlaylist
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          format: uuid
+          required: true
+          description: Playlist UUID
+        - in: path
+          name: songId
+          type: string
+          format: uuid
+          required: true
+          description: Song UUID
+      responses:
+        "204":
+          description: Song removed from playlist successfully (No Content)
+        "401":
+          description: Unauthorized (invalid or missing JWT token)
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: Playlist or song not found, or access denied
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  CreatePlaylistRequest:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Playlist name (required)
+        example: "My Favorite Songs"
+      description:
+        type: string
+        description: Playlist description (optional)
+        example: "A collection of my favorite tracks"
+    required:
+      - name
+  PlaylistResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Playlist UUID
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      userId:
+        type: string
+        format: uuid
+        description: Owner user UUID
+        example: "660e8400-e29b-41d4-a716-446655440001"
+      name:
+        type: string
+        description: Playlist name
+        example: "My Favorite Songs"
+      description:
+        type: string
+        description: Playlist description
+        example: "A collection of my favorite tracks"
+      createdAt:
+        type: string
+        format: date-time
+        description: Playlist creation timestamp
+        example: "2024-01-01T12:00:00Z"
+      updatedAt:
+        type: string
+        format: date-time
+        description: Playlist last update timestamp
+        example: "2024-01-15T14:30:00Z"
+    required:
+      - id
+      - userId
+      - name
+      - createdAt
+      - updatedAt
+  PlaylistSongResponse:
+    type: object
+    properties:
+      songId:
+        type: string
+        format: uuid
+        description: Song UUID (reference to QueueManager Song)
+        example: "770e8400-e29b-41d4-a716-446655440002"
+      position:
+        type: integer
+        format: int32
+        description: Position of song in playlist (0-based)
+        example: 0
+      addedAt:
+        type: string
+        format: date-time
+        description: Timestamp when song was added to playlist
+        example: "2024-01-10T10:00:00Z"
+    required:
+      - songId
+      - position
+      - addedAt
+  PlaylistWithSongsResponse:
+    type: object
+    properties:
+      playlist:
+        $ref: "#/definitions/PlaylistResponse"
+      songs:
+        type: array
+        description: List of songs in playlist, ordered by position
+        items:
+          $ref: "#/definitions/PlaylistSongResponse"
+    required:
+      - playlist
+      - songs
+  Error:
+    type: object
+    properties:
+      error:
+        type: string
+        description: Error message
+        example: "Playlist not found or access denied"
+    required:
+      - error
+
+
