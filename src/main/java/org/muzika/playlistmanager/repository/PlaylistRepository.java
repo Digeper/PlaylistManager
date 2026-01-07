@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface PlaylistRepository extends JpaRepository<Playlist, UUID> {
     List<Playlist> findByUserId(UUID userId);
     Optional<Playlist> findByIdAndUserId(UUID id, UUID userId);
+    Optional<Playlist> findByUserIdAndName(UUID userId, String name);
 }
 
 

@@ -32,7 +32,8 @@ public class PlaylistService {
 
     public List<PlaylistResponse> getAllPlaylists(String username) {
         User user = userService.getUserOrThrow(username);
-        UUID userId = user.getUuid();
+        // Use userId (auth userId) not uuid (auto-generated PK) for consistency
+        UUID userId = user.getUserId() != null ? user.getUserId() : user.getUuid();
         List<Playlist> playlists = playlistRepository.findByUserId(userId);
         return playlists.stream()
                 .map(this::convertToResponse)
@@ -41,7 +42,8 @@ public class PlaylistService {
 
     public PlaylistResponse getPlaylistById(UUID playlistId, String username) {
         User user = userService.getUserOrThrow(username);
-        UUID userId = user.getUuid();
+        // Use userId (auth userId) not uuid (auto-generated PK) for consistency
+        UUID userId = user.getUserId() != null ? user.getUserId() : user.getUuid();
         Playlist playlist = playlistRepository.findByIdAndUserId(playlistId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found or access denied"));
         return convertToResponse(playlist);
@@ -49,7 +51,8 @@ public class PlaylistService {
 
     public PlaylistWithSongsResponse getPlaylistSongs(UUID playlistId, String username) {
         User user = userService.getUserOrThrow(username);
-        UUID userId = user.getUuid();
+        // Use userId (auth userId) not uuid (auto-generated PK) for consistency
+        UUID userId = user.getUserId() != null ? user.getUserId() : user.getUuid();
         Playlist playlist = playlistRepository.findByIdAndUserId(playlistId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found or access denied"));
         
@@ -66,7 +69,8 @@ public class PlaylistService {
 
     public PlaylistResponse createPlaylist(String username, String name, String description) {
         User user = userService.getUserOrThrow(username);
-        UUID userId = user.getUuid();
+        // Use userId (auth userId) not uuid (auto-generated PK) for consistency across services
+        UUID userId = user.getUserId() != null ? user.getUserId() : user.getUuid();
         
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Playlist name is required");
@@ -78,12 +82,15 @@ public class PlaylistService {
         playlist.setDescription(description != null ? description.trim() : null);
 
         playlist = playlistRepository.save(playlist);
+        
         return convertToResponse(playlist);
     }
 
     public void addSongToPlaylist(UUID playlistId, UUID songId, String username) {
         User user = userService.getUserOrThrow(username);
-        UUID userId = user.getUuid();
+        // Use userId (auth userId) not uuid (auto-generated PK) for consistency
+        UUID userId = user.getUserId() != null ? user.getUserId() : user.getUuid();
+        
         Playlist playlist = playlistRepository.findByIdAndUserId(playlistId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found or access denied"));
 
@@ -111,7 +118,8 @@ public class PlaylistService {
 
     public void removeSongFromPlaylist(UUID playlistId, UUID songId, String username) {
         User user = userService.getUserOrThrow(username);
-        UUID userId = user.getUuid();
+        // Use userId (auth userId) not uuid (auto-generated PK) for consistency
+        UUID userId = user.getUserId() != null ? user.getUserId() : user.getUuid();
         Playlist playlist = playlistRepository.findByIdAndUserId(playlistId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found or access denied"));
 
@@ -120,7 +128,8 @@ public class PlaylistService {
 
     public void deletePlaylist(UUID playlistId, String username) {
         User user = userService.getUserOrThrow(username);
-        UUID userId = user.getUuid();
+        // Use userId (auth userId) not uuid (auto-generated PK) for consistency
+        UUID userId = user.getUserId() != null ? user.getUserId() : user.getUuid();
         Playlist playlist = playlistRepository.findByIdAndUserId(playlistId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found or access denied"));
 
