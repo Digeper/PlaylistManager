@@ -25,18 +25,6 @@ public class JwtService {
         return claims.getSubject();
     }
 
-    public String extractUserId(String token) {
-        Claims claims = extractClaims(token);
-        // Try to get userId from claims, fallback to subject (username) if not present
-        Object userIdObj = claims.get("userId");
-        if (userIdObj != null) {
-            return userIdObj.toString();
-        }
-        // If userId is not in claims, return username (subject)
-        // This can be enhanced later to resolve userId from username via Kafka
-        return claims.getSubject();
-    }
-
     public boolean validateToken(String token) {
         try {
             extractClaims(token);

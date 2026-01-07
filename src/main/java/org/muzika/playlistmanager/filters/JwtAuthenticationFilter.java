@@ -35,12 +35,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             if (jwtService.validateToken(token)) {
                 String username = jwtService.extractUsername(token);
-                String userId = jwtService.extractUserId(token);
                 
-                // Store both username and userId in authentication context
                 UsernamePasswordAuthenticationToken authentication = 
                     new UsernamePasswordAuthenticationToken(
-                        userId != null && !userId.equals(username) ? userId : username,
+                        username,
                         null,
                         Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
                     );
