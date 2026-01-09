@@ -8,7 +8,6 @@ on:
     paths:
       - 'PlaylistManager/**'
       - 'muzikaLib/**'
-      - '.github/workflows/playlistmanager-deploy.yaml'
   pull_request:
     branches:
       - main
@@ -58,22 +57,26 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
+          cache-dependency-path: PlaylistManager/pom.xml
 
       - name: Generate version
         id: version
+        working-directory: PlaylistManager
         run: |
-          VERSION=$(grep -o '<version>[^<]*</version>' PlaylistManager/pom.xml | sed 's/<version>\(.*\)<\/version>/\1/' | sed -n '2p' | tr -d '[:space:]' || echo "0.0.1-SNAPSHOT")
+          VERSION=$(grep -o '<version>[^<]*</version>' pom.xml | sed 's/<version>\(.*\)<\/version>/\1/' | sed -n '2p' | tr -d '[:space:]' || echo "0.0.1-SNAPSHOT")
           SHORT_SHA=$(git rev-parse --short HEAD)
           IMAGE_TAG="${VERSION}-${SHORT_SHA}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
       - name: Build PlaylistManager
-        run: mvn clean package -DskipTests -B -f PlaylistManager/pom.xml
+        working-directory: PlaylistManager
+        run: mvn clean package -DskipTests -B
 
       - name: Run Tests
         if: ${{ github.event.inputs.skip_tests != 'true' }}
-        run: mvn test -B -f PlaylistManager/pom.xml
+        working-directory: PlaylistManager
+        run: mvn test -B
 
       - name: Upload test results
         if: always()
@@ -100,6 +103,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
+          cache-dependency-path: PlaylistManager/pom.xml
 
       - name: Validate ACR configuration
         run: |
@@ -117,9 +121,9 @@ jobs:
       - name: Build and Push Docker image
         env:
           ACR_NAME: ${{ secrets.ACR_NAME }}
+        working-directory: PlaylistManager
         run: |
           mvn compile jib:build \
-            -f PlaylistManager/pom.xml \
             -Djib.to.image=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_tag }} \
             -Djib.to.tags=${{ needs.build.outputs.image_tag }},latest,${{ github.sha }} \
             -Djib.to.auth.username=${{ secrets.ACR_USERNAME }} \
