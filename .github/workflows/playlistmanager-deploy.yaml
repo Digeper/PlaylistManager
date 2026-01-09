@@ -57,7 +57,6 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
-          cache-dependency-path: PlaylistManager/pom.xml
 
       - name: Generate version
         id: version
@@ -103,7 +102,6 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
-          cache-dependency-path: PlaylistManager/pom.xml
 
       - name: Validate ACR configuration
         run: |
@@ -219,8 +217,8 @@ jobs:
           kubectl get pods -n kafka -l strimzi.io/cluster=kafka-cluster || echo "No Kafka pods found"
 
       - name: Update manifests
+        working-directory: PlaylistManager/k8s
         run: |
-          cd PlaylistManager/k8s
           sed -i "s/newTag: .*/newTag: ${{ needs.build.outputs.image_tag }}/" kustomization.yaml
           sed -i "s/\${ACR_NAME}/${{ secrets.ACR_NAME }}/g" deployment.yaml kustomization.yaml
           
@@ -243,8 +241,8 @@ jobs:
           fi
 
       - name: Setup Key Vault secrets (SecretProviderClass)
+        working-directory: PlaylistManager/k8s
         run: |
-          cd PlaylistManager/k8s
           [ -f "secretproviderclass.yaml" ] || { echo "No SecretProviderClass found, skipping Key Vault setup"; exit 0; }
           
           echo "Applying SecretProviderClass..."
@@ -284,8 +282,8 @@ jobs:
           exit 1
 
       - name: Deploy PlaylistManager
+        working-directory: PlaylistManager/k8s
         run: |
-          cd PlaylistManager/k8s
           
           # Exclude secrets.yaml if using Key Vault
           [ -f "secretproviderclass.yaml" ] && {
