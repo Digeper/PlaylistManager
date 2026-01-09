@@ -1,0 +1,20 @@
+# Service for PlaylistManager
+apiVersion: v1
+kind: Service
+metadata:
+  name: playlistmanager
+  namespace: muzika
+  labels:
+    app: playlistmanager
+    app.kubernetes.io/name: playlistmanager
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: muzika-platform
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8092
+      targetPort: 8092
+      protocol: TCP
+  selector:
+    app: playlistmanager

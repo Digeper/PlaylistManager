@@ -1,0 +1,52 @@
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: playlistmanager-network-policy-restrictive
+  namespace: muzika
+spec:
+  podSelector:
+    matchLabels:
+      app: playlistmanager
+  policyTypes:
+     - Ingress
+     - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: muzika
+      ports:
+        - protocol: TCP
+          port: 8092
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # PostgreSQL - Azure Database for PostgreSQL
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Kafka - Internal cluster communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+    # Azure services (Key Vault, ACR, etc.)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
