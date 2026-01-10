@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "users")
+@Table(name = "users_playlist")
 @NoArgsConstructor
 public class User {
 
