@@ -6,8 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'PlaylistManager/**'
-      - 'muzikaLib/**'
+      - '**'
       - '.github/workflows/playlistmanager-deploy.yaml'
   pull_request:
     branches:
