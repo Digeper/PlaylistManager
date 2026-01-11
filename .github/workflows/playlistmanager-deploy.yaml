@@ -8,12 +8,14 @@ on:
     paths:
       - 'PlaylistManager/**'
       - 'muzikaLib/**'
+      - '.github/workflows/playlistmanager-deploy.yaml'
   pull_request:
     branches:
       - main
     paths:
-      - 'PlaylistManager/**'
+      - '**'
       - 'muzikaLib/**'
+      - '.github/workflows/playlistmanager-deploy.yaml'
   workflow_dispatch:
     inputs:
       environment:
