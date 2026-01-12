@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/api/playlist")
 public class PlaylistController {
 
     private final PlaylistService playlistService;
@@ -30,28 +31,28 @@ public class PlaylistController {
         throw new IllegalStateException("User not authenticated");
     }
 
-    @GetMapping("/playlist")
+    @GetMapping
     public ResponseEntity<List<PlaylistResponse>> getAllPlaylists() {
         String username = getAuthenticatedUsername();
         List<PlaylistResponse> playlists = playlistService.getAllPlaylists(username);
         return ResponseEntity.ok(playlists);
     }
 
-    @GetMapping("/playlist/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<PlaylistWithSongsResponse> getPlaylist(@PathVariable UUID id) {
         String username = getAuthenticatedUsername();
         PlaylistWithSongsResponse response = playlistService.getPlaylistSongs(id, username);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/playlist")
+    @PostMapping
     public ResponseEntity<PlaylistResponse> createPlaylist(@RequestBody CreatePlaylistRequest request) {
         String username = getAuthenticatedUsername();
         PlaylistResponse response = playlistService.createPlaylist(username, request.getName(), request.getDescription());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/playlist/{id}/song/{songId}")
+    @PostMapping("/{id}/song/{songId}")
     public ResponseEntity<Void> addSongToPlaylist(
             @PathVariable UUID id,
             @PathVariable UUID songId) {
@@ -60,14 +61,14 @@ public class PlaylistController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @DeleteMapping("/playlist/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePlaylist(@PathVariable UUID id) {
         String username = getAuthenticatedUsername();
         playlistService.deletePlaylist(id, username);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/playlist/{id}/song/{songId}")
+    @DeleteMapping("/{id}/song/{songId}")
     public ResponseEntity<Void> removeSongFromPlaylist(
             @PathVariable UUID id,
             @PathVariable UUID songId) {
