@@ -36,10 +36,17 @@ public class KafkaConsumerService {
             log.info("Successfully created/retrieved user in PlaylistManager: userId={}, username={}", 
                     event.getUserId(), event.getUsername());
             
-            // Create "Liked" playlist for the new user
-            playlistService.createPlaylist(event.getUsername(), "Liked", null);
-            log.info("Successfully created 'Liked' playlist for user: userId={}, username={}", 
-                    event.getUserId(), event.getUsername());
+            // Check if "Liked" playlist already exists before creating
+            var existingLikedPlaylist = playlistRepository.findByUserIdAndName(event.getUserId(), "Liked");
+            if (existingLikedPlaylist.isEmpty()) {
+                // Create "Liked" playlist for the new user only if it doesn't exist
+                playlistService.createPlaylist(event.getUsername(), "Liked", null);
+                log.info("Successfully created 'Liked' playlist for user: userId={}, username={}", 
+                        event.getUserId(), event.getUsername());
+            } else {
+                log.info("'Liked' playlist already exists for user: userId={}, username={}", 
+                        event.getUserId(), event.getUsername());
+            }
             
         } catch (Exception e) {
             log.error("Failed to process user created event: userId={}, username={}, error={}",
